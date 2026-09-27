@@ -1,0 +1,76 @@
+{
+  "$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json",
+  "schemaVersion": 1,
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  cmux — kept deliberately close to the Ghostty setup.
+  //
+  //  cmux EMBEDS Ghostty and reads ~/.config/ghostty/config for all
+  //  terminal behaviour: font, size, ligatures, background-opacity,
+  //  background-blur, and keybinds. So none of that is repeated here —
+  //  change it in the Ghostty config and run `cmux reload-config`.
+  //
+  //  The theme is the one exception: cmux stores its own override in
+  //  ~/Library/Application Support/com.cmuxterm.app/config.ghostty.
+  //  `theme <name>` now syncs both, so they cannot drift apart again.
+  //
+  //  Reload after editing:  cmux reload-config   (no restart needed)
+  //  Validate:              cmux config doctor
+  // ══════════════════════════════════════════════════════════════════════
+
+  "app": {
+    // Every theme in this setup is dark; following macOS into light mode
+    // would leave dark terminals inside light chrome.
+    "appearance": "dark",
+
+    // Cmd-click a file and it opens in nvim, not a GUI preview panel.
+    // The whole point of this setup is that reading happens in the terminal,
+    // and render-markdown.nvim already renders markdown in the buffer.
+    "openSupportedFilesInCmux": false,
+    "openMarkdownInCmuxViewer": false,
+    "preferredEditor": "nvim",
+
+    "workspaceInheritWorkingDirectory": true,
+    "newWorkspacePlacement": "afterCurrent",
+    "confirmQuit": "dirty-only",
+    "focusHistoryIncludesPanesAndTabs": true
+  },
+
+  "sidebarAppearance": {
+    // The reason cmux looked like a different app: the sidebar painted its
+    // own tint. This makes it use the terminal background instead, so the
+    // window reads as one continuous Ghostty surface.
+    "matchTerminalBackground": true,
+    "tintOpacity": 0.06
+  },
+
+  "sidebar": {
+    // The vertical workspace list is the reason for using cmux, so keep it
+    // informative rather than minimal.
+    "branchLayout": "vertical",
+    "showBranchDirectory": true,
+    "showPullRequests": true,
+    "showPorts": true,
+    "showProgress": true,
+    "showAgentActivity": true,
+    "watchGitStatus": true,
+    "wrapWorkspaceTitles": false,
+    "notificationMessageLineLimit": 6
+  },
+
+  "workspaceColors": {
+    // A left rail reads as a colour cue without repainting the whole row.
+    "indicatorStyle": "leftRail"
+  },
+
+  "shortcuts": {
+    "bindings": {
+      // The one real divergence from Ghostty muscle memory. Everything else
+      // already matches: cmd+d / cmd+shift+d split, cmd+alt+arrows move
+      // focus, cmd+shift+enter zooms, cmd+t new surface, cmd+shift+[ ]
+      // cycles surfaces, cmd+f / cmd+g search, cmd+shift+, reloads.
+      "toggleFullScreen": "cmd+enter"
+    },
+    "showModifierHoldHints": true
+  }
+}

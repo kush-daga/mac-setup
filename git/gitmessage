@@ -1,0 +1,10 @@
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Subject: imperative mood, <= 50 chars, no trailing period.
+#   Add rate limiting to the ingest endpoint
+#
+# Body: wrap at 72. Explain WHY, not what — the diff already shows what.
+#
+# Footer: Refs #123 / Closes #123 / Co-Authored-By: Name <email>
+# ─────────────────────────────────────────────────────────────────────────

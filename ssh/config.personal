@@ -1,0 +1,20 @@
+# ═══════════════════════════════════════════════════════════════════════
+#  Personal GitHub, isolated from the office account.
+#
+#  The office setup keeps `Host github.com` + ~/.ssh/id_ed25519 + the
+#  work gh CLI login. None of that is touched.
+#
+#  This adds a SEPARATE alias. A remote written as
+#      git@github-personal:<user>/<repo>.git
+#  resolves to github.com but authenticates with the personal key only.
+#
+#  Appended to ~/.ssh/config by install.sh.
+# ═══════════════════════════════════════════════════════════════════════
+
+Host github-personal
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519_personal
+  IdentitiesOnly yes
+  AddKeysToAgent yes
+  UseKeychain yes

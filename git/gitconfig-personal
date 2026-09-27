@@ -1,0 +1,16 @@
+# ═══════════════════════════════════════════════════════════════════════
+#  Personal identity. Applied ONLY inside ~/.dotfiles/ and ~/personal/
+#  (see the includeIf blocks in git/gitconfig).
+#
+#  Check with:  cd ~/.dotfiles && git config user.email
+# ═══════════════════════════════════════════════════════════════════════
+
+[user]
+	name = Kush Daga
+	email = 40840079+kush-daga@users.noreply.github.com
+
+# Push over the `github-personal` SSH alias (see ssh/config.personal), which
+# uses ~/.ssh/id_ed25519_personal. The office key and gh CLI login are
+# untouched by this.
+[url "git@github-personal:"]
+	insteadOf = git@github.com:

@@ -1,0 +1,25 @@
+# material-ocean-bright — theme definition consumed by bin/theme
+# Material Ocean's near-black ground with the text lifted from 6.1:1 to
+# 13.5:1. Uses the custom Ghostty theme in ghostty/themes/.
+GHOSTTY_THEME="Material Ocean Bright"
+NVIM_COLORSCHEME="material"
+BAT_THEME="Coldark-Dark"
+STARSHIP_PALETTE="material_ocean_bright"
+
+bg="#0f111a"
+surface="#1a1c25"
+overlay="#2b3350"
+fg="#d5dae8"
+muted="#7887a0"
+blue="#82aaff"
+cyan="#89ddff"
+teal="#80cbc4"
+green="#c3e88d"
+yellow="#ffcb6b"
+orange="#f78c6c"
+red="#ff5370"
+purple="#c792ea"
+minus="#3a2530"
+minus_emph="#6b2f3d"
+plus="#1f3329"
+plus_emph="#33553f"

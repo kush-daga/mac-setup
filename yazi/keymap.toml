@@ -1,0 +1,30 @@
+# Extra yazi keys on top of the defaults.
+[[mgr.prepend_keymap]]
+on   = [ "g", "d" ]
+run  = "cd ~/Developer"
+desc = "go to ~/Developer"
+
+[[mgr.prepend_keymap]]
+on   = [ "g", "D" ]
+run  = "cd ~/.dotfiles"
+desc = "go to ~/.dotfiles"
+
+[[mgr.prepend_keymap]]
+on   = [ "g", "c" ]
+run  = "cd ~/.config"
+desc = "go to ~/.config"
+
+[[mgr.prepend_keymap]]
+on   = "F"
+run  = 'shell -- fd --type f | fzf --preview "bat --color=always {}" | xargs -r nvim'
+desc = "fuzzy find and edit"
+
+[[mgr.prepend_keymap]]
+on   = "!"
+run  = 'shell "$SHELL" --block'
+desc = "drop to a shell here"
+
+[[mgr.prepend_keymap]]
+on   = "G"
+run  = 'shell -- lazygit'
+desc = "lazygit here"

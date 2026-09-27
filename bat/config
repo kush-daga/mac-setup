@@ -1,0 +1,18 @@
+# bat — the `cat`/pager replacement. Theme comes from $BAT_THEME (set by `theme`).
+--style=numbers,changes,header-filename,grid
+--italic-text=always
+--tabs=2
+--paging=auto
+--wrap=auto
+# Map extensions bat doesn't know to a sensible syntax.
+--map-syntax=*.jsonc:JSON
+--map-syntax=*.ipynb:JSON
+--map-syntax=.env*:Bash
+--map-syntax=*.envrc:Bash
+--map-syntax=.zshrc.local:Bash
+--map-syntax=*.conf:INI
+--map-syntax=Dockerfile*:Dockerfile
+--map-syntax=*.mdx:Markdown
+--map-syntax=**/.github/**/*.yml:YAML
+--map-syntax=*.tf:Terraform
+--map-syntax=*.tfvars:Terraform

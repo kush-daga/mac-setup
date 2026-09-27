@@ -1,0 +1,62 @@
+# ── macOS ────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+
+# ── Editors ──────────────────────────────────────────────────────────────
+*.swp
+*.swo
+*~
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.nvim.lua
+.nvimlog
+tags
+.luarc.json
+
+# ── Environments & secrets ───────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+.envrc
+.direnv/
+*.pem
+*.key
+!*.pub
+
+# ── Python ───────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# ── Node ─────────────────────────────────────────────────────────────────
+node_modules/
+.pnpm-store/
+npm-debug.log*
+yarn-error.log*
+.next/
+.turbo/
+dist/
+build/
+
+# ── Go / Rust ────────────────────────────────────────────────────────────
+target/
+*.test
+*.out
+
+# ── Logs & scratch ───────────────────────────────────────────────────────
+*.log
+.cache/
+tmp/
+.claude/settings.local.json

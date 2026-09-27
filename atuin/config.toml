@@ -1,0 +1,43 @@
+# atuin — shell history in SQLite. ctrl+R opens the search UI.
+# Up-arrow stays plain zsh prefix search on purpose (see 30-tools.zsh).
+
+## Search
+search_mode = "fuzzy"          # "prefix" | "fulltext" | "fuzzy" | "skim"
+filter_mode = "global"         # start global; ctrl+R then cycles scopes
+filter_mode_shell_up_key_binding = "session"
+workspaces = true              # inside a git repo, scope to that repo first
+
+## UI
+style = "compact"
+inline_height = 20
+show_preview = true
+show_help = true
+show_tabs = true
+enter_accept = false           # enter edits the line; ctrl+O runs it immediately
+keymap_mode = "emacs"
+
+## Storage
+auto_sync = false              # no account configured; flip to true after `atuin login`
+update_check = false
+sync_frequency = "10m"
+
+## Don't record these
+# Anything matching these is never written to the history database.
+history_filter = [
+  "^ ",                              # anything typed with a leading space
+  "sk-ant-api[0-9]{2}-",             # Anthropic keys
+  "sk-[A-Za-z0-9]{20,}",             # OpenAI-style keys
+  "gh[pousr]_[A-Za-z0-9]{20,}",      # GitHub tokens
+  "AKIA[0-9A-Z]{16}",                # AWS access key ids
+  "[A-Za-z0-9_]*(TOKEN|SECRET|PASSWORD|APIKEY|API_KEY)=[^ ]{8,}",
+  "Bearer [A-Za-z0-9_\\-\\.]{20,}",  # Authorization headers
+  "postgres(ql)?://[^:]+:[^@]+@",    # connection strings with credentials
+  "^genpass",
+  "^aws configure set",
+]
+cwd_filter = []
+
+## Stats
+[stats]
+common_prefix = ["sudo", "time", "env"]
+common_subcommands = ["git", "docker", "kubectl", "npm", "pnpm", "brew", "cargo", "gh", "tmux", "aws"]

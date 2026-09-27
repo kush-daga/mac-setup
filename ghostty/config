@@ -1,0 +1,204 @@
+# ═══════════════════════════════════════════════════════════════════════
+#  Ghostty — tuned for speed, legibility, and iTerm/Warp-style muscle memory
+#  Reload in place: cmd+shift+,        Docs: `ghostty +show-config --default`
+#  Validate edits:  ghostty +validate-config
+# ═══════════════════════════════════════════════════════════════════════
+
+# ── Theme ────────────────────────────────────────────────────────────────
+# Managed by the `theme` command (~/.dotfiles/bin/theme). It rewrites the
+# line below and reloads every tool at once, so edit via `theme` not by hand.
+theme = Material Ocean Bright
+
+# ── Font ─────────────────────────────────────────────────────────────────
+# Family names must match `ghostty +list-fonts` EXACTLY. The installed Nerd
+# Fonts register with a "Mono" suffix, so "FiraCode Nerd Font" (no suffix)
+# silently falls back to the system font and the icons break.
+#
+# Swap by moving the comment. Installed and ready:
+#   FiraCode Nerd Font Mono        ligatures, rounder, wider
+#   JetBrainsMono Nerd Font Mono   taller x-height, more upright
+#   JetBrainsMonoNL Nerd Font Mono same, no ligatures
+font-family = FiraCode Nerd Font Mono
+# Second entry is an icon fallback: anything the primary lacks is drawn from
+# here rather than from an arbitrary system font.
+font-family = Symbols Nerd Font Mono
+
+# Tune live with cmd+= / cmd+- , then put the value you settle on here so
+# new windows open at it. cmd+0 resets to this number.
+font-size = 14
+
+# FiraCode's ligatures. Drop both lines to get plain != and => back.
+font-feature = calt
+font-feature = liga
+
+# Your main display is a 2560x1440 external running at 1x (~109 DPI), where
+# macOS renders stems thin and thickening genuinely helps. The built-in
+# Retina panel does not need it, but a shared config has to pick one — and
+# too-thin on the low-DPI main screen is the worse failure.
+#
+# Strength defaults to 255, i.e. maximum, which reads as blobby. 60 is a
+# nudge, not a smear. Set font-thicken = false if you move to Retina-only.
+font-thicken = true
+font-thicken-strength = 60
+
+# Guarantee text stays legible against the translucent background: any
+# foreground that falls below this contrast ratio gets nudged. 1 = off.
+minimum-contrast = 1.1
+
+# Line spacing. 8% suits 13pt; 12% felt sparse once the text got smaller.
+# 0% for dense, 20% for loose.
+adjust-cell-height = 8%
+
+# ── Window & chrome ──────────────────────────────────────────────────────
+window-padding-x = 14
+window-padding-y = 10
+window-padding-balance = true
+window-decoration = auto
+macos-titlebar-style = tabs
+macos-window-shadow = true
+window-colorspace = display-p3
+window-width = 200
+window-height = 50
+window-save-state = always
+resize-overlay = never
+unfocused-split-opacity = 0.9
+
+# ── Translucency (the macOS vibrancy look) ───────────────────────────────
+# Text stays fully opaque; only the background is see-through, because
+# background-opacity-cells is left off.
+# This does cost GPU frame time. For maximum speed set opacity back to 1
+# and blur to false — nothing else needs to change.
+background-opacity = 0.88
+# Blur radius is per-frame GPU work over the whole window backdrop, and 32 was
+# well past the point where more radius is visible. 20 keeps the vibrancy look
+# for noticeably less frame time. For maximum speed set opacity to 1 and blur
+# to false — those two lines are the only thing standing between this config
+# and zero compositing cost.
+background-blur = 20
+
+# ── Cursor & mouse ───────────────────────────────────────────────────────
+cursor-style = block
+cursor-style-blink = false
+mouse-hide-while-typing = true
+copy-on-select = clipboard
+
+# ── Shell integration ────────────────────────────────────────────────────
+# Powers cmd+up/down prompt jumping, correct cwd in new splits, and
+# terminfo/env forwarding over ssh so nvim looks right on remote boxes.
+shell-integration = zsh
+shell-integration-features = cursor,sudo,title,ssh-env,ssh-terminfo,path
+
+# ── New in Ghostty 1.3 ───────────────────────────────────────────────────
+# Native scrollback search finally exists. It is bound by default:
+#   cmd+f  start search      cmd+g / cmd+shift+g  next / previous match
+#   cmd+e  search for the current selection       esc  end search
+# No keybind lines needed — listed here so the feature is discoverable.
+
+# Notify when a long command finishes in a window you are not looking at.
+# Exactly what you want for builds and deploys; silent while you watch.
+notify-on-command-finish = unfocused
+notify-on-command-finish-after = 20s
+
+# Keep a split zoomed when moving between splits, so cmd+alt+arrow does not
+# silently un-zoom you.
+split-preserve-zoom = navigation
+
+# Note: window/tab/split-inherit-working-directory all default to true in
+# 1.3, so new surfaces already open in the current directory. Nothing to set.
+
+# ── Behaviour ────────────────────────────────────────────────────────────
+# 64 MiB PER SURFACE was indefensible with cmux opening a surface per
+# workspace — that is memory pressure, which is the one kind of slowness you
+# cannot profile. 16 MiB is still roughly a million lines of history.
+scrollback-limit = 16777216
+clipboard-paste-protection = true
+confirm-close-surface = true
+app-notifications = no-clipboard-copy,no-config-reload
+# Makes alt+b / alt+f word-motions work in zsh instead of typing ∫ and ƒ.
+macos-option-as-alt = true
+
+# ── Quick terminal (drop-down scratch shell) ─────────────────────────────
+quick-terminal-position = top
+quick-terminal-animation-duration = 0.12
+quick-terminal-autohide = true
+quick-terminal-space-behavior = move
+
+# ═══════════════════════════════════════════════════════════════════════
+#  KEYBINDINGS
+# ═══════════════════════════════════════════════════════════════════════
+
+# ── Splits ───────────────────────────────────────────────────────────────
+keybind = cmd+d=new_split:right
+keybind = cmd+shift+d=new_split:down
+keybind = cmd+alt+left=goto_split:left
+keybind = cmd+alt+right=goto_split:right
+keybind = cmd+alt+up=goto_split:up
+keybind = cmd+alt+down=goto_split:down
+keybind = cmd+bracket_left=goto_split:previous
+keybind = cmd+bracket_right=goto_split:next
+keybind = cmd+shift+enter=toggle_split_zoom
+keybind = cmd+alt+equal=equalize_splits
+keybind = cmd+ctrl+left=resize_split:left,40
+keybind = cmd+ctrl+right=resize_split:right,40
+keybind = cmd+ctrl+up=resize_split:up,20
+keybind = cmd+ctrl+down=resize_split:down,20
+
+# ── Tabs ─────────────────────────────────────────────────────────────────
+keybind = cmd+t=new_tab
+keybind = cmd+shift+bracket_left=previous_tab
+keybind = cmd+shift+bracket_right=next_tab
+keybind = ctrl+tab=next_tab
+keybind = ctrl+shift+tab=previous_tab
+keybind = cmd+shift+backslash=toggle_tab_overview
+keybind = cmd+shift+i=prompt_surface_title
+
+# ── Windows ──────────────────────────────────────────────────────────────
+keybind = cmd+n=new_window
+keybind = cmd+enter=toggle_fullscreen
+keybind = cmd+w=close_surface
+keybind = cmd+shift+w=close_tab
+keybind = global:cmd+grave_accent=toggle_quick_terminal
+
+# ── Scrolling & prompt jumping (needs shell integration) ─────────────────
+keybind = cmd+up=jump_to_prompt:-1
+keybind = cmd+down=jump_to_prompt:1
+keybind = cmd+home=scroll_to_top
+keybind = cmd+end=scroll_to_bottom
+keybind = shift+page_up=scroll_page_up
+keybind = shift+page_down=scroll_page_down
+
+# ── Font size ────────────────────────────────────────────────────────────
+keybind = cmd+plus=increase_font_size:1
+keybind = cmd+equal=increase_font_size:1
+keybind = cmd+minus=decrease_font_size:1
+keybind = cmd+zero=reset_font_size
+
+# ── macOS text editing, sent through to the shell ────────────────────────
+# cmd combos never reach the shell on their own; the terminal has to
+# translate them into bytes. Ghostty already ships three of these:
+#   cmd+left  -> \x01 (ctrl+a, start of line)
+#   cmd+right -> \x05 (ctrl+e, end of line)
+#   cmd+backspace -> \x15 (ctrl+u, kill to start of line)
+#
+# cmd+backspace is deliberately NOT overridden here. It used to be mapped to
+# esc:K so it would hit the kill-buffer binding in 10-shell.zsh and clear the
+# whole line — but ESC K is a sequence only this zsh config understands, so
+# cmd+backspace did nothing in Claude Code, nvim's command line, psql, or any
+# other REPL. Ghostty's own default is already the right answer, \x15, so the
+# fix was to delete the override and stop fighting it.
+#
+# cmd+delete has no default, hence the one line below.
+keybind = cmd+delete=text:\x0b
+
+# ── Utility ──────────────────────────────────────────────────────────────
+keybind = cmd+k=clear_screen
+keybind = cmd+shift+comma=reload_config
+# Dump the whole scrollback into nvim — search it, yank it, save it.
+keybind = cmd+shift+s=write_scrollback_file:open
+keybind = cmd+shift+c=copy_to_clipboard
+keybind = cmd+shift+v=paste_from_clipboard
+keybind = cmd+shift+a=select_all
+
+# ── Pass-through to the shell/TUI ────────────────────────────────────────
+# Keep ctrl+cmd+f free for macOS; unbind Ghostty defaults that fight tmux/nvim.
+keybind = cmd+alt+shift+j=unbind

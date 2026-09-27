@@ -1,0 +1,24 @@
+# ═══════════════════════════════════════════════════════════════════════
+#  direnv
+# ═══════════════════════════════════════════════════════════════════════
+
+[global]
+# load_dotenv was true. That makes direnv treat every plain `.env` as an RC
+# file it must load, so each one needs `direnv allow` — and until it gets it,
+# direnv prints a "blocked" error on EVERY prompt in that directory. Seven
+# repos under ~/Developer were doing exactly that.
+#
+# It is also the wrong shape for the job: a `.env` normally holds config for
+# the application, not variables meant to enter your interactive shell, and
+# once allowed, any repo you cd into can inject environment variables.
+#
+# direnv's own default is false. A project that genuinely wants its .env in
+# the shell can opt in explicitly with an .envrc containing:
+#
+#     dotenv
+#
+# which is a deliberate, reviewable choice per project.
+load_dotenv = false
+
+# Don't announce every load/unload; errors still print.
+[whitelist]

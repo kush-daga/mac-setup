@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# ═══════════════════════════════════════════════════════════════════════
+#  scrub-history — replace secret-shaped strings in your shell history
+#  with a REDACTED marker. The commands stay; the secrets don't.
+#
+#    scrub-history --scan     count what's there, change nothing (default)
+#    scrub-history --apply    redact it, backing up every file first
+#
+#  Covers ~/.zsh_history, ~/.local/state/zsh/history, and atuin's database.
+#
+#  Redaction is NOT a substitute for rotating an exposed key. Rotate first.
+# ═══════════════════════════════════════════════════════════════════════
+set -euo pipefail
+
+MODE="${1:---scan}"
+case "$MODE" in
+  --scan|--apply) ;;
+  -h|--help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  *) echo "unknown flag: $MODE (try --scan or --apply)" >&2; exit 1 ;;
+esac
+
+# name|regex
+PATTERNS=(
+  "Anthropic key|sk-ant-api[0-9]{2}-[A-Za-z0-9_-]{20,}"
+  "OpenAI-style key|sk-[A-Za-z0-9]{32,}"
+  "GitHub token|gh[pousr]_[A-Za-z0-9]{20,}"
+  "AWS access key id|AKIA[0-9A-Z]{16}"
+  "Bearer token|Bearer [A-Za-z0-9_.-]{20,}"
+  "TOKEN= assignment|[A-Za-z0-9_]*TOKEN=[^ \"']{12,}"
+  "SECRET= assignment|[A-Za-z0-9_]*SECRET=[^ \"']{12,}"
+  "PASSWORD= assignment|[A-Za-z0-9_]*PASSWORD=[^ \"']{6,}"
+  "APIKEY= assignment|[A-Za-z0-9_]*API_?KEY=[^ \"']{12,}"
+  "DB URL with creds|postgres(ql)?://[^:]+:[^@]+@"
+)
+
+FILES=("$HOME/.zsh_history" "$HOME/.local/state/zsh/history")
+ATUIN_DB="$HOME/.local/share/atuin/history.db"
+
+bold=$'\033[1m'; red=$'\033[31m'; green=$'\033[32m'; yellow=$'\033[33m'; dim=$'\033[2m'; reset=$'\033[0m'
+
+total=0
+for f in "${FILES[@]}"; do
+  [[ -f "$f" ]] || continue
+  printf '\n%s%s%s\n' "$bold" "${f/#$HOME/~}" "$reset"
+  for entry in "${PATTERNS[@]}"; do
+    name="${entry%%|*}"; re="${entry#*|}"
+    n=$(LC_ALL=C grep -acE "$re" "$f" 2>/dev/null || true)
+    n=${n:-0}
+    if (( n > 0 )); then
+      printf '  %s%4d%s  %s\n' "$red" "$n" "$reset" "$name"
+      total=$(( total + n ))
+    fi
+  done
+  (( total == 0 )) && printf '  %sclean%s\n' "$green" "$reset"
+done
+
+if [[ -f "$ATUIN_DB" ]] && command -v sqlite3 >/dev/null; then
+  printf '\n%satuin database%s\n' "$bold" "$reset"
+  for entry in "${PATTERNS[@]}"; do
+    name="${entry%%|*}"
+    like="${name}"
+    case "$name" in
+      "Anthropic key")   pat='%sk-ant-api%' ;;
+      "GitHub token")    pat='%ghp_%' ;;
+      "Bearer token")    pat='%Bearer %' ;;
+      "AWS access key id") pat='%AKIA%' ;;
+      *) continue ;;
+    esac
+    n=$(sqlite3 "$ATUIN_DB" "SELECT count(*) FROM history WHERE command LIKE '$pat';" 2>/dev/null || echo 0)
+    (( n > 0 )) && printf '  %s%4d%s  %s\n' "$red" "$n" "$reset" "$like"
+  done
+fi
+
+if [[ "$MODE" == "--scan" ]]; then
+  cat <<EOF
+
+${yellow}This was a scan — nothing changed.${reset}
+
+${bold}Rotate the exposed keys first${reset}, then redact the copies:
+  scrub-history --apply
+
+Rotation matters more than redaction: these files may already be in a
+Time Machine snapshot or any other backup.
+EOF
+  exit 0
+fi
+
+# ── Apply ────────────────────────────────────────────────────────────────
+STAMP=$(date +%Y%m%d-%H%M%S)
+BACKUP="$HOME/.dotfiles-backup/history-$STAMP"
+mkdir -p "$BACKUP"
+
+for f in "${FILES[@]}"; do
+  [[ -f "$f" ]] || continue
+  cp -a "$f" "$BACKUP/$(basename "$f")"
+  tmp=$(mktemp)
+  cp -a "$f" "$tmp"
+  for entry in "${PATTERNS[@]}"; do
+    re="${entry#*|}"
+    LC_ALL=C perl -pe "s/$re/[REDACTED]/g" "$tmp" > "$tmp.new" && mv "$tmp.new" "$tmp"
+  done
+  cat "$tmp" > "$f"      # preserve the original inode and permissions
+  rm -f "$tmp"
+  printf '  %s→%s redacted %s\n' "$green" "$reset" "${f/#$HOME/~}"
+done
+
+if [[ -f "$ATUIN_DB" ]] && command -v sqlite3 >/dev/null; then
+  cp -a "$ATUIN_DB" "$BACKUP/history.db"
+  sqlite3 "$ATUIN_DB" <<'SQL'
+DELETE FROM history WHERE command LIKE '%sk-ant-api%'
+   OR command LIKE '%ghp_%' OR command LIKE '%gho_%'
+   OR command LIKE '%AKIA%' OR command LIKE '%Bearer %'
+   OR command GLOB '*sk-[A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9]*';
+SQL
+  printf '  %s→%s purged matching rows from atuin\n' "$green" "$reset"
+fi
+
+printf '\n%sDone.%s Originals: %s\n' "$bold" "$reset" "${BACKUP/#$HOME/~}"
+printf '%sRotate the keys if you have not already.%s\n' "$yellow" "$reset"

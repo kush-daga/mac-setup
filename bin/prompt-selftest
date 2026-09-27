@@ -1,0 +1,119 @@
+#!/usr/bin/env zsh
+# ═══════════════════════════════════════════════════════════════════════
+#  prompt-selftest — exercise every branch of the prompt and fail loudly.
+#
+#  Written after `int()` shipped broken: it sat on the >2s duration branch,
+#  which normal use and casual testing almost never hit, so the error only
+#  appeared days later in real work. Rare branches need deliberate coverage.
+#
+#  Run after editing zsh/20-prompt.zsh.
+# ═══════════════════════════════════════════════════════════════════════
+emulate -L zsh
+setopt EXTENDED_GLOB
+
+typeset -i fails=0
+typeset -r PROMPT_FILE="${DOTFILES:-$HOME/.dotfiles}/zsh/20-prompt.zsh"
+
+green() { print -P "  %F{green}ok%f   $1" }
+red()   { print -P "  %F{red}FAIL%f $1"; (( fails++ )) }
+
+# Run a snippet in a fresh zsh with the prompt sourced; fail on any stderr.
+check() {
+  local label=$1 code=$2
+  local err out
+  err=$(zsh -c "
+    zmodload zsh/datetime
+    XDG_CONFIG_HOME=\${XDG_CONFIG_HOME:-\$HOME/.config}
+    source '$PROMPT_FILE'
+    $code
+  " 2>&1 >/dev/null)
+  if [[ -n "$err" ]]; then
+    red "$label"
+    print "        $err" | head -3
+  else
+    green "$label"
+  fi
+}
+
+print -P "%BPrompt self-test%b"
+print "  file: ${PROMPT_FILE/#$HOME/~}"
+print ""
+
+print -P "%Bsyntax%b"
+if zsh -n "$PROMPT_FILE" 2>/dev/null; then green "parses"; else red "parse error"; fi
+
+print -P "\n%Bduration — every branch, including the ones you never see%b"
+for s in 0.5 1.999 2 3.4 59.9 60 61 3599 3600 3700 7325 90000; do
+  check "elapsed ${s}s" "_P_START=\$(( EPOCHREALTIME - $s )); _p_duration; print -r -- \"\$_P_DUR\""
+done
+
+print -P "\n%Bpath shortening%b"
+for d in "$HOME" / /tmp /usr/local/share "$HOME/.dotfiles" \
+         "$HOME/.dotfiles/nvim/lua/plugins"; do
+  [[ -d "$d" ]] || continue
+  check "cd ${d/#$HOME/~}" "builtin cd '$d'; COLUMNS=120 _smart_pwd; print -r -- \"\$SMART_PWD/\$SMART_PWD_TAIL\""
+done
+for w in 300 120 80 60 40 20 10; do
+  check "width ${w} cols" "builtin cd '$HOME/.dotfiles/nvim/lua/plugins' 2>/dev/null || builtin cd '$HOME'; COLUMNS=$w _P_PWD_KEY=''; _smart_pwd; print -r -- \"\$SMART_PWD\""
+done
+
+print -P "\n%Bgit rendering%b"
+check "inside a repo"        "builtin cd '${DOTFILES:-$HOME/.dotfiles}'; _p_git_render \"\$(_p_git_worker \$PWD)\"; print -r -- \"\$_P_GIT\""
+check "outside a repo"       "builtin cd /tmp; _p_git_render \"\$(_p_git_worker \$PWD)\"; print -r -- \"[\$_P_GIT]\""
+check "empty worker output"  "_p_git_render ''; print -r -- \"[\$_P_GIT]\""
+check "all counters at once" "_p_git_render 'main|1|2|3|4|5|6|7'; print -r -- \"\$_P_GIT\""
+check "detached head"        "_p_git_render 'a1b2c3d|0|0|0|0|0|0|0'; print -r -- \"\$_P_GIT\""
+
+print -P "\n%Bassembly%b"
+check "build with git"    "SMART_PWD='~/x' SMART_PWD_TAIL='y'; _p_git_render 'main|0|1|0|0|0|0|2'; _p_build; print -r -- \"\$PROMPT\""
+check "build without git" "SMART_PWD='' SMART_PWD_TAIL='/tmp'; _P_GIT=''; _p_build; print -r -- \"\$PROMPT\""
+check "build with duration" "_P_DUR='5s'; SMART_PWD='' SMART_PWD_TAIL='~'; _p_build; print -r -- \"\$RPROMPT\""
+
+# ── The strongest check: expand the prompt and inspect what is VISIBLE ───
+#
+# Both prompt bugs that reached real use were invisible to a syntax check.
+#   int(el)                       -> error only past the 2s branch
+#   ${x:+%F{$C}...}               -> the brace closed the expansion early,
+#                                    turning "%F{#7887a0}7s%f" into
+#                                    "%F{#7887a07s%f}", which expands to
+#                                    NOTHING — the text is swallowed into the
+#                                    colour spec, so counting braces misses it.
+#
+# So: render the prompt through zsh's own prompt expansion, strip the ANSI,
+# and assert the text a human should see is actually there.
+print -P "\n%Bexpanded prompt contains what it should%b"
+(
+  XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+  source "$PROMPT_FILE"
+  SMART_PWD='~/a/b'; SMART_PWD_TAIL='leafdir'; _P_DUR='7s'
+  _p_git_render 'mybranch|1|2|3|0|0|0|9'
+  _p_build
+
+  strip() { print -Pn -- "$1" | perl -pe 's/\e\[[0-9;]*m//g' }
+  local vis="$(strip "$PROMPT")" visR="$(strip "$RPROMPT")"
+  local -i bad=0
+  local want
+  for want in leafdir '~/a/b' mybranch '+1' '!2' '?3' '$9'; do
+    if [[ "$vis" != *"$want"* ]]; then
+      print "  PROMPT is missing: $want"
+      bad=1
+    fi
+  done
+  if [[ "$visR" != *'7s'* ]]; then
+    print "  RPROMPT is missing the duration: got [$visR]"
+    bad=1
+  fi
+  if [[ "$vis$visR" == *'{'* || "$vis$visR" == *'}'* ]]; then
+    print "  a literal brace survived expansion"
+    bad=1
+  fi
+  exit $bad
+)
+if (( $? )); then red "expanded prompt is wrong"; else green "path, branch, all counters and duration are visible"; fi
+
+print ""
+if (( fails )); then
+  print -P "%F{red}%B$fails check(s) failed.%b%f"
+  exit 1
+fi
+print -P "%F{green}%BAll checks passed.%b%f"

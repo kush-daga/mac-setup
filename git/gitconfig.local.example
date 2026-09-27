@@ -1,0 +1,11 @@
+# ═══════════════════════════════════════════════════════════════════════
+#  Copy to ~/.gitconfig.local and fill in. This file is NOT committed —
+#  it keeps your email address out of the dotfiles repo.
+#
+#  This is the DEFAULT identity, used everywhere except the directories
+#  covered by the includeIf blocks in git/gitconfig (which use the
+#  personal identity instead).
+# ═══════════════════════════════════════════════════════════════════════
+[user]
+	name = Your Name
+	email = you@company.com
