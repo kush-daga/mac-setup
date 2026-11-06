@@ -40,6 +40,8 @@ setopt INTERACTIVE_COMMENTS      # # comments work at the prompt
 setopt NO_FLOW_CONTROL           # frees ctrl+s / ctrl+q
 setopt NO_BEEP
 setopt NO_CLOBBER                # > won't overwrite; use >| to force
+setopt APPEND_CREATE             # but >> may still create a new file (NO_CLOBBER alone
+                                 # breaks it, e.g. cmux's per-terminal history)
 setopt LONG_LIST_JOBS
 setopt NOTIFY                    # report finished jobs immediately
 setopt NO_HUP                    # background jobs survive shell exit

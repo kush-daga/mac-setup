@@ -190,11 +190,18 @@ fi
 # ── T3 Code: `t3` CLI, open workspaces as new threads ────────────────────
 # The desktop app ships the `t3` CLI. Use it when no standalone `t3` is
 # installed. The filter removes the Electron warning that each run prints.
-if (( ! $+commands[t3] )) && [[ -d "/Applications/T3 Code (Alpha).app" ]]; then
+# The app's name depends on the build, so use whichever one is installed.
+typeset -g _T3_APP=""
+for _t3_name in "T3 Code (Nightly)" "T3 Code (Beta)" "T3 Code (Alpha)"; do
+  if [[ -d "/Applications/$_t3_name.app" ]]; then _T3_APP=$_t3_name; break; fi
+done
+unset _t3_name
+
+if (( ! $+commands[t3] )) && [[ -n $_T3_APP ]]; then
   t3() {
     setopt localoptions nomultios
-    local app="/Applications/T3 Code (Alpha).app/Contents"
-    { ELECTRON_RUN_AS_NODE=1 "$app/MacOS/T3 Code (Alpha)" \
+    local app="/Applications/$_T3_APP.app/Contents"
+    { ELECTRON_RUN_AS_NODE=1 "$app/MacOS/$_T3_APP" \
         "$app/Resources/app.asar/apps/server/dist/bin.mjs" "$@" 2>&1 >&3 \
         | grep -v 'node_main\.cc' >&2 } 3>&1
     return $pipestatus[1]
@@ -206,8 +213,9 @@ if (( $+commands[t3] || $+functions[t3] )); then
   # it is new. Starts the app if it is not running.
   t3open() {
     local dir=${${1:-$PWD}:A}
-    if ! pgrep -qf '/MacOS/T3 Code \(Alpha\)$'; then
-      open -a "T3 Code (Alpha)" || return
+    # pgrep -f takes a regex, so the parentheses in the name become wildcards.
+    if [[ -n $_T3_APP ]] && ! pgrep -qf "/MacOS/${_T3_APP//[()]/.}\$"; then
+      open -a "$_T3_APP" || return
       local i
       for i in {1..30}; do t3 app "$dir" 2>/dev/null && return; sleep 1; done
     fi

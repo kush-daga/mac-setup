@@ -7,7 +7,7 @@
 # ── Terminal ─────────────────────────────────────────────────────────────
 cask "ghostty"                          # GPU-accelerated terminal
 cask "cmux"                             # Ghostty-embedding workspace sidebar
-cask "t3-code"                          # T3 Code app (also ships the `t3` CLI)
+cask "t3-code@nightly"                  # T3 Code nightly
 cask "font-fira-code-nerd-font"         # Ghostty's actual font: icons + ligatures
 cask "font-jetbrains-mono-nerd-font"    # alternate font, swap in ghostty/config
 cask "font-symbols-only-nerd-font"      # icon fallback for other fonts
@@ -81,3 +81,5 @@ brew "lazydocker"                       # docker TUI
 # ── Runtimes (managed elsewhere, listed for a fresh machine) ─────────────
 brew "asdf"                             # generic version manager
 brew "nvm"                              # node versions
+brew "go"                               # Mason builds gopls with it
+brew "python@3.13"                      # Mason installs basedpyright with it
